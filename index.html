@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 교전규칙(ROE) 의사결정 시뮬레이터</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 AI 교전규칙(ROE) 의사결정 시뮬레이터</h1>
+            <p class="subtitle">AI ROE Decision Simulator - Proof of Concept</p>
+        </header>
+
+        <!-- 시작 화면 -->
+        <div id="startScreen" class="screen active">
+            <div class="intro-box">
+                <h2>시뮬레이터 소개</h2>
+                <p>본 시뮬레이터는 <strong>AI 기반 유/무인 복합 편대</strong> 운영 시 발생할 수 있는 윤리적 딜레마 상황을 체험하는 도구입니다.</p>
+                <p>당신은 <strong>지휘관</strong> 역할을 맡아, AI의 분석 데이터를 기반으로 제한된 시간 내에 중대한 결정을 내려야 합니다.</p>
+                <div class="warning-box">
+                    ⚠️ <strong>주의:</strong> AI의 효율성과 인간의 통제 사이의 균형이 얼마나 중요한지 경험하게 될 것입니다.
+                </div>
+                <button class="btn btn-primary" onclick="startSimulation()">시뮬레이션 시작</button>
+            </div>
+        </div>
+
+        <!-- 시나리오 화면 -->
+        <div id="scenarioScreen" class="screen">
+            <!-- 전장 상황판 -->
+            <div class="panel scenario-panel">
+                <h2>📡 전장 상황판 (Scenario Display)</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">상황 (Context):</span>
+                        <span id="context" class="value"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">특이 사항 (Note):</span>
+                        <span id="note" class="value warning-text"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">임무 (Mission):</span>
+                        <span id="mission" class="value mission-text"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI 분석 패널 -->
+            <div class="panel ai-panel">
+                <h2>🤖 AI 분석 패널 (AI Analysis)</h2>
+                <div class="analysis-grid">
+                    <div class="analysis-item">
+                        <div class="analysis-label">표적 식별률</div>
+                        <div id="targetConfidence" class="analysis-value"></div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-label">위협 수준</div>
+                        <div id="threatLevel" class="analysis-value"></div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-label">부수적 피해 확률</div>
+                        <div id="collateralDamage" class="analysis-value danger-text"></div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-label">AI 권장 행동</div>
+                        <div id="aiRecommendation" class="analysis-value"></div>
+                    </div>
+                </div>
+                
+                <div class="countdown-container">
+                    <div class="countdown-label">⏱️ 골든타임 (Golden Time)</div>
+                    <div id="countdown" class="countdown"></div>
+                </div>
+            </div>
+
+            <!-- 지휘관 의사결정 -->
+            <div class="panel decision-panel">
+                <h2>⚔️ 지휘관 의사결정 (Commander's Choice)</h2>
+                <p class="decision-prompt">제한된 시간 내에 결정을 내려야 합니다!</p>
+                <div class="button-group">
+                    <button id="engageBtn" class="btn btn-danger" onclick="makeDecision('engage')" disabled>
+                        🎯 즉시 교전<br><span class="btn-subtitle">(AI 자율 판단)</span>
+                    </button>
+                    <button id="holdBtn" class="btn btn-warning" onclick="makeDecision('hold')" disabled>
+                        🛑 교전 중지<br><span class="btn-subtitle">(인간 재검토)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 결과 화면 -->
+        <div id="resultScreen" class="screen">
+            <div class="panel result-panel">
+                <h2 id="resultTitle">📊 작전 결과 (Result Feedback)</h2>
+                
+                <div class="result-box">
+                    <div class="result-section">
+                        <h3>결과</h3>
+                        <p id="resultOutcome" class="result-text"></p>
+                    </div>
+                    
+                    <div class="result-section">
+                        <h3>피해 보고</h3>
+                        <p id="resultDamage" class="result-text"></p>
+                    </div>
+                    
+                    <div class="result-section insight">
+                        <h3>💡 정책적 시사점</h3>
+                        <p id="resultInsight" class="result-text"></p>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="nextScenario()">다음 시나리오</button>
+                    <button class="btn btn-primary" onclick="restartSimulation()">처음으로</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
