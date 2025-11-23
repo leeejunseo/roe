@@ -75,7 +75,7 @@ const scenarios = [
 let currentScenarioIndex = 0;
 let countdownTimer = null;
 let timeLeft = 0;
-let hasPlayedWarningFeedback = false;
+let beepTimer = null;
 
 // 화면 전환 함수
 function showScreen(screenId) {
@@ -129,7 +129,6 @@ function loadScenario(index) {
 function startCountdown(seconds) {
     timeLeft = seconds;
     const totalTime = seconds;
-    hasPlayedWarningFeedback = false;
     updateCountdownDisplay(totalTime);
     
     // 버튼 활성화
@@ -140,17 +139,14 @@ function startCountdown(seconds) {
         timeLeft--;
         updateCountdownDisplay(totalTime);
         
-        // 5초 이하부터 매 초마다 긴급 비프음 (시간 줄수록 주파수 높아짐)
-        if (timeLeft > 0 && timeLeft <= 5) {
-            const urgency = 6 - timeLeft; // 5초→1, 4초→2, ..., 1초→5
-            playUrgentBeep(urgency);
-            if (navigator.vibrate) {
-                navigator.vibrate(100);
-            }
+        // 경고음 시작/업데이트
+        if (timeLeft <= 5 && timeLeft > 0) {
+            startBeepPattern(timeLeft);
         }
 
         if (timeLeft <= 0) {
             clearInterval(countdownTimer);
+            stopBeepPattern();
             timeoutDecision();
         }
     }, 1000);
@@ -197,6 +193,7 @@ function updateCountdownDisplay(totalTime) {
 // 의사결정
 function makeDecision(choice) {
     clearInterval(countdownTimer);
+    stopBeepPattern();
     
     // 버튼 비활성화
     document.getElementById('engageBtn').disabled = true;
@@ -289,18 +286,45 @@ function playBeep(frequency, durationSeconds) {
     oscillator.stop(ctx.currentTime + durationSeconds);
 }
 
-function playUrgentBeep(urgencyLevel) {
-    // urgencyLevel: 1(덜 긴급) ~ 5(매우 긴급)
-    const baseFreq = 600;
-    const frequency = baseFreq + (urgencyLevel * 150); // 750Hz ~ 1350Hz
-    playBeep(frequency, 0.1);
+// 폭탄 타이머 스타일 비프음 패턴
+function startBeepPattern(timeLeft) {
+    stopBeepPattern();
+    
+    // 시간에 따라 비프 간격 조정 (밀리초)
+    let interval;
+    if (timeLeft === 5) interval = 800;      // 5초: 느리게
+    else if (timeLeft === 4) interval = 600; // 4초
+    else if (timeLeft === 3) interval = 400; // 3초
+    else if (timeLeft === 2) interval = 250; // 2초: 빠르게
+    else if (timeLeft === 1) interval = 150; // 1초: 매우 빠르게
+    
+    // 첫 비프 즉시 재생
+    playBeep(800, 0.08);
+    if (navigator.vibrate) {
+        navigator.vibrate(50);
+    }
+    
+    // 반복 비프
+    beepTimer = setInterval(() => {
+        playBeep(800, 0.08);
+        if (navigator.vibrate) {
+            navigator.vibrate(50);
+        }
+    }, interval);
+}
+
+function stopBeepPattern() {
+    if (beepTimer) {
+        clearInterval(beepTimer);
+        beepTimer = null;
+    }
 }
 
 function triggerTimeoutFeedback() {
-    // 시간 초과 시 낮은 경고음
-    playBeep(300, 0.3);
+    // 시간 초과 시 긴 경고음
+    playBeep(400, 0.5);
     if (navigator.vibrate) {
-        navigator.vibrate([200, 100, 200]);
+        navigator.vibrate([300, 100, 300]);
     }
 }
 
