@@ -75,6 +75,7 @@ const scenarios = [
 let currentScenarioIndex = 0;
 let countdownTimer = null;
 let timeLeft = 0;
+let hasPlayedWarningFeedback = false;
 
 // 화면 전환 함수
 function showScreen(screenId) {
@@ -116,6 +117,9 @@ function loadScenario(index) {
     document.getElementById('threatLevel').textContent = scenario.threatLevel;
     document.getElementById('collateralDamage').textContent = scenario.collateralDamage;
     document.getElementById('aiRecommendation').textContent = scenario.aiRecommendation;
+
+    // 시각화 바 업데이트
+    updateMetricBars(scenario);
     
     // 카운트다운 시작
     startCountdown(scenario.goldenTime);
@@ -124,6 +128,7 @@ function loadScenario(index) {
 // 카운트다운 시작
 function startCountdown(seconds) {
     timeLeft = seconds;
+    hasPlayedWarningFeedback = false;
     updateCountdownDisplay();
     
     // 버튼 활성화
@@ -134,6 +139,11 @@ function startCountdown(seconds) {
         timeLeft--;
         updateCountdownDisplay();
         
+        if (timeLeft <= 3 && !hasPlayedWarningFeedback) {
+            hasPlayedWarningFeedback = true;
+            triggerWarningFeedback();
+        }
+
         if (timeLeft <= 0) {
             clearInterval(countdownTimer);
             timeoutDecision();
@@ -175,7 +185,76 @@ function timeoutDecision() {
     document.getElementById('holdBtn').disabled = true;
     
     // 시간 초과는 hold와 동일한 결과
+    triggerTimeoutFeedback();
     showResult('hold');
+}
+
+// 메트릭 바 업데이트
+function updateMetricBars(scenario) {
+    const targetStr = scenario.targetConfidence || '';
+    const collateralStr = scenario.collateralDamage || '';
+
+    const targetPercent = parseInt(targetStr, 10) || 0;
+    const collateralPercent = parseInt(collateralStr, 10) || 0;
+
+    const targetBar = document.getElementById('targetConfidenceBar');
+    const collateralBar = document.getElementById('collateralDamageBar');
+
+    if (targetBar) {
+        targetBar.style.width = `${Math.max(0, Math.min(targetPercent, 100))}%`;
+    }
+
+    if (collateralBar) {
+        collateralBar.style.width = `${Math.max(0, Math.min(collateralPercent, 100))}%`;
+    }
+}
+
+// 사운드 및 진동 피드백
+let audioContext = null;
+
+function getAudioContext() {
+    if (!audioContext) {
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            audioContext = null;
+        }
+    }
+    return audioContext;
+}
+
+function playBeep(frequency, durationSeconds) {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.value = frequency;
+
+    gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSeconds);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.start();
+    oscillator.stop(ctx.currentTime + durationSeconds);
+}
+
+function triggerWarningFeedback() {
+    playBeep(880, 0.15);
+    if (navigator.vibrate) {
+        navigator.vibrate(200);
+    }
+}
+
+function triggerTimeoutFeedback() {
+    playBeep(440, 0.25);
+    if (navigator.vibrate) {
+        navigator.vibrate([150, 100, 150]);
+    }
 }
 
 // 결과 표시
