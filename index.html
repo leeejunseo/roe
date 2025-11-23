@@ -19,6 +19,17 @@
                 <h2>시뮬레이터 소개</h2>
                 <p>본 시뮬레이터는 <strong>AI 기반 유/무인 복합 편대</strong> 운영 시 발생할 수 있는 윤리적 딜레마 상황을 체험하는 도구입니다.</p>
                 <p>당신은 <strong>지휘관</strong> 역할을 맡아, AI의 분석 데이터를 기반으로 제한된 시간 내에 중대한 결정을 내려야 합니다.</p>
+                
+                <div class="info-box">
+                    <h3>📋 진행 방식</h3>
+                    <ul>
+                        <li>✅ <strong>총 3개의 시나리오</strong>를 순차적으로 경험합니다</li>
+                        <li>⏱️ 각 시나리오마다 <strong>15초의 골든타임</strong> 내에 결정해야 합니다</li>
+                        <li>🎯 즉시 교전 또는 교전 중지 중 <strong>하나를 선택</strong>합니다</li>
+                        <li>📊 모든 시나리오 완료 후 <strong>종합 분석</strong>이 제공됩니다</li>
+                    </ul>
+                </div>
+                
                 <div class="warning-box">
                     ⚠️ <strong>주의:</strong> AI의 효율성과 인간의 통제 사이의 균형이 얼마나 중요한지 경험하게 될 것입니다.
                 </div>
@@ -28,6 +39,11 @@
 
         <!-- 시나리오 화면 -->
         <div id="scenarioScreen" class="screen">
+            <!-- 진행도 표시 -->
+            <div class="progress-indicator">
+                <span id="progressText">Scenario <span id="currentStep">1</span> / 3</span>
+            </div>
+            
             <!-- 전장 상황판 -->
             <div class="panel scenario-panel">
                 <h2>📡 전장 상황판 (Scenario Display)</h2>
@@ -118,6 +134,21 @@
                     <div class="result-section insight">
                         <h3>💡 정책적 시사점</h3>
                         <p id="resultInsight" class="result-text"></p>
+                    </div>
+                </div>
+
+                <!-- 대안 선택 비교 -->
+                <div class="alternative-box">
+                    <h3 id="alternativeTitle">만약 다른 선택을 했다면?</h3>
+                    <div class="alternative-content">
+                        <div class="alternative-item">
+                            <strong>결과:</strong>
+                            <span id="alternativeOutcome"></span>
+                        </div>
+                        <div class="alternative-item">
+                            <strong>피해:</strong>
+                            <span id="alternativeDamage"></span>
+                        </div>
                     </div>
                 </div>
 

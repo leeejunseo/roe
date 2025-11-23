@@ -76,6 +76,7 @@ let currentScenarioIndex = 0;
 let countdownTimer = null;
 let timeLeft = 0;
 let beepTimer = null;
+let userChoices = []; // 사용자 선택 기록
 
 // 화면 전환 함수
 function showScreen(screenId) {
@@ -88,6 +89,7 @@ function showScreen(screenId) {
 // 시뮬레이션 시작
 function startSimulation() {
     currentScenarioIndex = 0;
+    userChoices = [];
     loadScenario(currentScenarioIndex);
     showScreen('scenarioScreen');
 }
@@ -95,6 +97,7 @@ function startSimulation() {
 // 시뮬레이션 재시작
 function restartSimulation() {
     currentScenarioIndex = 0;
+    userChoices = [];
     showScreen('startScreen');
 }
 
@@ -106,6 +109,9 @@ function loadScenario(index) {
     }
 
     const scenario = scenarios[index];
+    
+    // 진행도 업데이트
+    document.getElementById('currentStep').textContent = index + 1;
     
     // 시나리오 정보 표시
     document.getElementById('context').textContent = scenario.context;
@@ -333,9 +339,25 @@ function showResult(choice) {
     const scenario = scenarios[currentScenarioIndex];
     const result = scenario.results[choice];
     
+    // 선택 기록 저장
+    userChoices.push({
+        scenarioId: scenario.id,
+        choice: choice,
+        result: result
+    });
+    
     document.getElementById('resultOutcome').innerHTML = result.outcome;
     document.getElementById('resultDamage').innerHTML = result.damage;
     document.getElementById('resultInsight').innerHTML = result.insight;
+    
+    // 대안 선택 비교 표시
+    const alternativeChoice = choice === 'engage' ? 'hold' : 'engage';
+    const alternativeResult = scenario.results[alternativeChoice];
+    const alternativeChoiceText = alternativeChoice === 'engage' ? '즉시 교전' : '교전 중지';
+    
+    document.getElementById('alternativeTitle').textContent = `만약 "${alternativeChoiceText}"를 선택했다면?`;
+    document.getElementById('alternativeOutcome').innerHTML = alternativeResult.outcome;
+    document.getElementById('alternativeDamage').innerHTML = alternativeResult.damage;
     
     showScreen('resultScreen');
 }
@@ -355,8 +377,30 @@ function nextScenario() {
 // 최종 화면
 function showFinalScreen() {
     const resultPanel = document.querySelector('.result-panel');
+    
+    // 사용자 선택 요약 테이블 생성
+    let choicesSummary = '<div class="choices-summary"><h3>📋 당신의 선택 기록</h3><div class="choices-table">';
+    
+    userChoices.forEach((record, index) => {
+        const choiceText = record.choice === 'engage' ? '🎯 즉시 교전' : '🛑 교전 중지';
+        const choiceClass = record.choice === 'engage' ? 'choice-engage' : 'choice-hold';
+        
+        choicesSummary += `
+            <div class="choice-row">
+                <div class="choice-scenario">시나리오 ${record.scenarioId}</div>
+                <div class="choice-decision ${choiceClass}">${choiceText}</div>
+                <div class="choice-outcome">${record.result.outcome}</div>
+            </div>
+        `;
+    });
+    
+    choicesSummary += '</div></div>';
+    
     resultPanel.innerHTML = `
         <h2>🎓 시뮬레이션 완료</h2>
+        
+        ${choicesSummary}
+        
         <div class="result-box">
             <div class="result-section insight">
                 <h3>핵심 메시지</h3>
