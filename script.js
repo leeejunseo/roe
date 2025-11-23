@@ -9,7 +9,7 @@ const scenarios = [
         threatLevel: "심각",
         collateralDamage: "15%",
         aiRecommendation: "즉시 교전 (Engage)",
-        goldenTime: 10,
+        goldenTime: 15,
         results: {
             engage: {
                 outcome: "✅ 임무 성공. 적기 3기 격추.",
@@ -32,7 +32,7 @@ const scenarios = [
         threatLevel: "높음",
         collateralDamage: "35%",
         aiRecommendation: "조건부 교전 (Conditional Engage)",
-        goldenTime: 12,
+        goldenTime: 15,
         results: {
             engage: {
                 outcome: "⚠️ 교전 실시. 선박 2척 격침.",
@@ -55,7 +55,7 @@ const scenarios = [
         threatLevel: "매우 심각",
         collateralDamage: "42%",
         aiRecommendation: "즉시 교전 (Engage)",
-        goldenTime: 8,
+        goldenTime: 15,
         results: {
             engage: {
                 outcome: "✅ 임무 성공. 적 드론 5기 전부 격추.",
@@ -128,8 +128,9 @@ function loadScenario(index) {
 // 카운트다운 시작
 function startCountdown(seconds) {
     timeLeft = seconds;
+    const totalTime = seconds;
     hasPlayedWarningFeedback = false;
-    updateCountdownDisplay();
+    updateCountdownDisplay(totalTime);
     
     // 버튼 활성화
     document.getElementById('engageBtn').disabled = false;
@@ -137,11 +138,15 @@ function startCountdown(seconds) {
     
     countdownTimer = setInterval(() => {
         timeLeft--;
-        updateCountdownDisplay();
+        updateCountdownDisplay(totalTime);
         
-        if (timeLeft <= 3 && !hasPlayedWarningFeedback) {
-            hasPlayedWarningFeedback = true;
-            triggerWarningFeedback();
+        // 5초 이하부터 매 초마다 긴급 비프음 (시간 줄수록 주파수 높아짐)
+        if (timeLeft > 0 && timeLeft <= 5) {
+            const urgency = 6 - timeLeft; // 5초→1, 4초→2, ..., 1초→5
+            playUrgentBeep(urgency);
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            }
         }
 
         if (timeLeft <= 0) {
@@ -152,18 +157,40 @@ function startCountdown(seconds) {
 }
 
 // 카운트다운 표시 업데이트
-function updateCountdownDisplay() {
+function updateCountdownDisplay(totalTime) {
     const countdownEl = document.getElementById('countdown');
+    const countdownBar = document.getElementById('countdownBar');
+    
     countdownEl.textContent = `${timeLeft}초`;
     
-    // 시간에 따라 색상 변경
+    // 막대 진행률 계산 (남은 시간 비율)
+    const percentage = (timeLeft / totalTime) * 100;
+    if (countdownBar) {
+        countdownBar.style.width = `${Math.max(0, percentage)}%`;
+    }
+    
+    // 시간에 따라 색상 변경 (숫자 + 막대)
     if (timeLeft <= 3) {
         countdownEl.style.color = '#ef4444';
         countdownEl.style.animation = 'pulse 0.5s infinite';
+        if (countdownBar) {
+            countdownBar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+            countdownBar.style.boxShadow = '0 0 16px rgba(239, 68, 68, 0.8)';
+        }
     } else if (timeLeft <= 5) {
         countdownEl.style.color = '#f59e0b';
+        countdownEl.style.animation = 'none';
+        if (countdownBar) {
+            countdownBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+            countdownBar.style.boxShadow = '0 0 12px rgba(245, 158, 11, 0.7)';
+        }
     } else {
         countdownEl.style.color = '#10b981';
+        countdownEl.style.animation = 'none';
+        if (countdownBar) {
+            countdownBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+            countdownBar.style.boxShadow = '0 0 12px rgba(16, 185, 129, 0.6)';
+        }
     }
 }
 
@@ -197,15 +224,34 @@ function updateMetricBars(scenario) {
     const targetPercent = parseInt(targetStr, 10) || 0;
     const collateralPercent = parseInt(collateralStr, 10) || 0;
 
+    console.log('막대 업데이트:', { targetPercent, collateralPercent });
+
     const targetBar = document.getElementById('targetConfidenceBar');
     const collateralBar = document.getElementById('collateralDamageBar');
 
     if (targetBar) {
-        targetBar.style.width = `${Math.max(0, Math.min(targetPercent, 100))}%`;
+        // 초기화 후 애니메이션 트리거
+        targetBar.style.width = '0%';
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                targetBar.style.width = `${Math.max(0, Math.min(targetPercent, 100))}%`;
+                console.log('표적 식별률 막대:', targetBar.style.width);
+            }, 100);
+        });
+    } else {
+        console.error('targetConfidenceBar 요소를 찾을 수 없음');
     }
 
     if (collateralBar) {
-        collateralBar.style.width = `${Math.max(0, Math.min(collateralPercent, 100))}%`;
+        collateralBar.style.width = '0%';
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                collateralBar.style.width = `${Math.max(0, Math.min(collateralPercent, 100))}%`;
+                console.log('부수적 피해 막대:', collateralBar.style.width);
+            }, 100);
+        });
+    } else {
+        console.error('collateralDamageBar 요소를 찾을 수 없음');
     }
 }
 
@@ -243,17 +289,18 @@ function playBeep(frequency, durationSeconds) {
     oscillator.stop(ctx.currentTime + durationSeconds);
 }
 
-function triggerWarningFeedback() {
-    playBeep(880, 0.15);
-    if (navigator.vibrate) {
-        navigator.vibrate(200);
-    }
+function playUrgentBeep(urgencyLevel) {
+    // urgencyLevel: 1(덜 긴급) ~ 5(매우 긴급)
+    const baseFreq = 600;
+    const frequency = baseFreq + (urgencyLevel * 150); // 750Hz ~ 1350Hz
+    playBeep(frequency, 0.1);
 }
 
 function triggerTimeoutFeedback() {
-    playBeep(440, 0.25);
+    // 시간 초과 시 낮은 경고음
+    playBeep(300, 0.3);
     if (navigator.vibrate) {
-        navigator.vibrate([150, 100, 150]);
+        navigator.vibrate([200, 100, 200]);
     }
 }
 
