@@ -35,7 +35,7 @@ const scenarios = [
         environment: "해상",
         targetConfidence: "76%",
         threatLevel: "높음",
-        collateralDamage: "35%",
+        collateralDamage: "20%",
         aiRecommendation: "조건부 교전 (Conditional Engage)",
         goldenTime: 15,
         results: {
