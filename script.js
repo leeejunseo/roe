@@ -5,6 +5,8 @@ const scenarios = [
         context: "아군 방어 기지 20km 전방. 적 UAV 3기 고속 접근 중.",
         note: "적 접근 경로 10km 반경 내 민간 병원 식별됨.",
         mission: "적 UAV 3기 요격",
+        targetValueLevel: 2, // Level 1~3
+        environment: "전방", // 전방/해상/도심
         targetConfidence: "98%",
         threatLevel: "심각",
         collateralDamage: "15%",
@@ -21,6 +23,7 @@ const scenarios = [
                 damage: "❌ 아군 방어 기지 레이더 시설 손상. 작전 능력 30% 저하.",
                 insight: "인간의 개입은 안전하지만, AI의 속도를 따라가지 못했습니다. 이 딜레마를 해결할 <strong>'사전 정의된 교전규칙(ROE)'</strong>이 필요합니다. 예: 부수적 피해 확률 10% 이상 시 자동 중지."
             }
+
         }
     },
     {
@@ -28,6 +31,8 @@ const scenarios = [
         context: "해상 작전 구역. 미확인 선박 2척 고속 접근 중.",
         note: "선박 중 1척에서 민간 어선 신호 감지. 하지만 적 위장 전술 가능성 있음.",
         mission: "위협 선박 무력화",
+        targetValueLevel: 1,
+        environment: "해상",
         targetConfidence: "76%",
         threatLevel: "높음",
         collateralDamage: "35%",
@@ -51,6 +56,8 @@ const scenarios = [
         context: "도심 상공. 적 드론 편대 5기가 주요 인프라 시설로 접근 중.",
         note: "교전 시 드론 잔해가 인구 밀집 지역에 낙하할 가능성 높음.",
         mission: "적 드론 편대 격추",
+        targetValueLevel: 3,
+        environment: "도심",
         targetConfidence: "99%",
         threatLevel: "매우 심각",
         collateralDamage: "42%",
@@ -71,8 +78,10 @@ const scenarios = [
     }
 ];
 
+
 // 현재 상태
-let currentScenarioIndex = 0;
+let currentScenario = 0;
+let score = 0;
 let countdownTimer = null;
 let timeLeft = 0;
 let beepTimer = null;
@@ -88,15 +97,16 @@ function showScreen(screenId) {
 
 // 시뮬레이션 시작
 function startSimulation() {
-    currentScenarioIndex = 0;
-    userChoices = [];
-    loadScenario(currentScenarioIndex);
+    currentScenario = 0;
+    score = 0;
+    loadScenario(currentScenario); // 첫 번째 시나리오 로드
     showScreen('scenarioScreen');
 }
 
 // 시뮬레이션 재시작
 function restartSimulation() {
-    currentScenarioIndex = 0;
+    currentScenario = 0;
+    score = 0;
     userChoices = [];
     showScreen('startScreen');
 }
@@ -123,6 +133,8 @@ function loadScenario(index) {
     document.getElementById('threatLevel').textContent = scenario.threatLevel;
     document.getElementById('collateralDamage').textContent = scenario.collateralDamage;
     document.getElementById('aiRecommendation').textContent = scenario.aiRecommendation;
+    document.getElementById('targetValue').textContent = `Level ${scenario.targetValueLevel}`;
+    document.getElementById('environment').textContent = scenario.environment;
 
     // 시각화 바 업데이트
     updateMetricBars(scenario);
@@ -336,7 +348,7 @@ function triggerTimeoutFeedback() {
 
 // 결과 표시
 function showResult(choice) {
-    const scenario = scenarios[currentScenarioIndex];
+    const scenario = scenarios[currentScenario];
     const result = scenario.results[choice];
     
     // 선택 기록 저장
@@ -364,13 +376,12 @@ function showResult(choice) {
 
 // 다음 시나리오
 function nextScenario() {
-    currentScenarioIndex++;
-    
-    if (currentScenarioIndex >= scenarios.length) {
-        showFinalScreen();
-    } else {
-        loadScenario(currentScenarioIndex);
+    currentScenario++;
+    if (currentScenario < 3) {
+        loadScenario(currentScenario);
         showScreen('scenarioScreen');
+    } else {
+        showFinalScreen();
     }
 }
 
@@ -432,5 +443,6 @@ function showFinalScreen() {
 
 // 초기화
 document.addEventListener('DOMContentLoaded', () => {
+    // 시작 화면 표시
     showScreen('startScreen');
 });
