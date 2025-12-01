@@ -11,7 +11,7 @@ const scenarios = [
         threatLevel: "심각",
         collateralDamage: "15%",
         aiRecommendation: "즉시 교전 (Engage)",
-        goldenTime: 15,
+        goldenTime: 30,
         results: {
             engage: {
                 outcome: "✅ 임무 성공. 적기 3기 격추.",
@@ -37,7 +37,7 @@ const scenarios = [
         threatLevel: "높음",
         collateralDamage: "20%",
         aiRecommendation: "조건부 교전 (Conditional Engage)",
-        goldenTime: 15,
+        goldenTime: 30,
         results: {
             engage: {
                 outcome: "⚠️ 교전 실시. 선박 2척 격침.",
@@ -62,7 +62,7 @@ const scenarios = [
         threatLevel: "매우 심각",
         collateralDamage: "42%",
         aiRecommendation: "즉시 교전 (Engage)",
-        goldenTime: 15,
+        goldenTime: 30,
         results: {
             engage: {
                 outcome: "✅ 임무 성공. 적 드론 5기 전부 격추.",
