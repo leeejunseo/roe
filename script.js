@@ -11,7 +11,7 @@ const scenarios = [
         threatLevel: "심각",
         collateralDamage: "15%",
         aiRecommendation: "즉시 교전 (Engage)",
-        goldenTime: 30,
+        goldenTime: 15,
         results: {
             engage: {
                 outcome: "✅ 임무 성공. 적기 3기 격추.",
@@ -37,7 +37,7 @@ const scenarios = [
         threatLevel: "높음",
         collateralDamage: "20%",
         aiRecommendation: "조건부 교전 (Conditional Engage)",
-        goldenTime: 30,
+        goldenTime: 15,
         results: {
             engage: {
                 outcome: "⚠️ 교전 실시. 선박 2척 격침.",
@@ -62,7 +62,7 @@ const scenarios = [
         threatLevel: "매우 심각",
         collateralDamage: "42%",
         aiRecommendation: "즉시 교전 (Engage)",
-        goldenTime: 30,
+        goldenTime: 15,
         results: {
             engage: {
                 outcome: "✅ 임무 성공. 적 드론 5기 전부 격추.",
@@ -139,8 +139,31 @@ function loadScenario(index) {
     // 시각화 바 업데이트
     updateMetricBars(scenario);
     
-    // 카운트다운 시작
-    startCountdown(scenario.goldenTime);
+    // 버튼 초기화
+    const startBtn = document.getElementById('startGoldenTimeBtn');
+    const countdownContainer = document.getElementById('countdownContainer');
+    
+    startBtn.style.display = 'block';
+    startBtn.textContent = 'Golden Time 시작';
+    countdownContainer.style.display = 'none';
+    
+    // 초기에는 결정 버튼 비활성화
+    document.getElementById('engageBtn').disabled = true;
+    document.getElementById('holdBtn').disabled = true;
+    
+    // 카운트다운 초기화
+    if (countdownTimer) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+    }
+    stopBeepPattern();
+    
+    // 골든타임 시작 버튼 이벤트 리스너
+    startBtn.onclick = function() {
+        startBtn.style.display = 'none'; // Hide the button instead of disabling it
+        countdownContainer.style.display = 'block';
+        startCountdown(scenario.goldenTime);
+    };
 }
 
 // 카운트다운 시작
@@ -149,7 +172,7 @@ function startCountdown(seconds) {
     const totalTime = seconds;
     updateCountdownDisplay(totalTime);
     
-    // 버튼 활성화
+    // 결정 버튼 활성화
     document.getElementById('engageBtn').disabled = false;
     document.getElementById('holdBtn').disabled = false;
     
@@ -175,7 +198,7 @@ function updateCountdownDisplay(totalTime) {
     const countdownEl = document.getElementById('countdown');
     const countdownBar = document.getElementById('countdownBar');
     
-    countdownEl.textContent = `${timeLeft}초`;
+    countdownEl.textContent = timeLeft;
     
     // 막대 진행률 계산 (남은 시간 비율)
     const percentage = (timeLeft / totalTime) * 100;

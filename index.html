@@ -96,15 +96,21 @@
                     </div>
                     <div class="analysis-item">
                         <div class="analysis-label">AI 권장 행동</div>
-                        <div id="aiRecommendation" class="analysis-value"></div>
+                        <div id="aiRecommendation" class="analysis-value" style="color: #ff0000; font-weight: bold;"></div>
                     </div>
                 </div>
                 
-                <div class="countdown-container">
+                <div class="countdown-container" style="text-align: center;">
                     <div class="countdown-label">⏱️ 골든타임 (Golden Time)</div>
-                    <div id="countdown" class="countdown"></div>
-                    <div class="countdown-bar">
-                        <div id="countdownBar" class="countdown-bar-fill"></div>
+                    <button id="startGoldenTimeBtn" class="btn btn-primary" style="margin: 10px auto; display: block;">골든타임 시작</button>
+                    <div id="countdownContainer" style="display: none; margin-top: 10px;">
+                        <div class="countdown">
+                            <span>남은 시간: </span>
+                            <span id="countdown">15</span>초
+                        </div>
+                        <div class="countdown-bar">
+                            <div id="countdownBar" class="countdown-bar-fill"></div>
+                        </div>
                     </div>
                 </div>
             </div>
